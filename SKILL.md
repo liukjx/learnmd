@@ -238,7 +238,12 @@ Quality bar for a complete source-derived course:
 - no lesson is only a high-level summary when its coverage rows require procedures, code, commands, or project steps;
 - `python3 <skill-dir>/scripts/check_knowledge_coverage.py <course-workspace> --strict` exits successfully.
 
-Use the bundled lesson scaffold for new lesson files so Quartz frontmatter is complete from the start:
+Use the bundled lesson scaffold for new lesson files so Quartz frontmatter is complete from the start. For numbered lessons, the filename number and display title number have different jobs:
+
+- lesson filenames must start with a four-digit order key: `0001-<dash-case-name>.md`, `0002-...`, `0032-...`;
+- lesson display titles and page H1 must start with a two-digit Chinese prefix for lessons 1-99: `第01课：...`, `第02课：...`, `第32课：...`;
+- never mix display title forms such as `第1课`, `第 1 课`, `第0001课`, or `第0027课`;
+- supplemental lessons must use filenames like `s01-<dash-case-name>.md` and display titles like `补充课01：...`; do not use `第S07课`.
 
 ```bash
 python3 <skill-dir>/scripts/scaffold_lesson.py <course-workspace> \
@@ -290,7 +295,7 @@ The fixer is dry-run by default. Add `--apply` only after reviewing the planned 
 
 ## Lessons
 
-A lesson is the main thing you produce — the unit in which knowledge and skills reach the user. Each lesson is one self-contained Markdown file, saved to `./lessons/` and titled `0001-<dash-case-name>.md` where the number increments each time. **The YAML `title` and page H1 must always start with `第XX课：`** (e.g. `第01课：NLP到底是什么？`). Use `--number` with `scaffold_lesson.py` to auto-generate this prefix rather than writing it manually.
+A lesson is the main thing you produce — the unit in which knowledge and skills reach the user. Each lesson is one self-contained Markdown file, saved to `./lessons/` and titled `0001-<dash-case-name>.md` where the four-digit number increments each time. **The YAML `title` and page H1 must always start with `第NN课：`** for standard lessons (e.g. `第01课：NLP到底是什么？`). Use `--number` with `scaffold_lesson.py` to auto-generate this prefix rather than writing it manually. Supplemental lessons must use `sNN-<dash-case-name>.md` and `补充课NN：...`.
 
 A lesson should be **beautiful** — clean structure, well-paced sections, and thoughtful use of diagrams, callouts, and formatting — since the user will return to these later to review in Obsidian.
 

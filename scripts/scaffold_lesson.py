@@ -34,7 +34,13 @@ def parse_args() -> argparse.Namespace:
         "--number",
         type=int,
         default=None,
-        help="Lesson number. When provided, auto-prepends '第NN课：' to the title.",
+        help="Standard lesson number. When provided, auto-prepends '第NN课：' and requires slug prefix NNNN-.",
+    )
+    parser.add_argument(
+        "--supplement-number",
+        type=int,
+        default=None,
+        help="Supplemental lesson number. Auto-prepends '补充课NN：' and requires slug prefix sNN-.",
     )
     parser.add_argument(
         "--force",
@@ -47,6 +53,21 @@ def parse_args() -> argparse.Namespace:
 def validate_slug(slug: str) -> None:
     if not re.fullmatch(r"[0-9a-z][0-9a-z-]*", slug):
         raise SystemExit("error: --slug must be lowercase dash-case letters/digits/hyphens")
+
+
+def validate_numbering(args: argparse.Namespace) -> None:
+    if args.number is not None and args.supplement_number is not None:
+        raise SystemExit("error: use either --number or --supplement-number, not both")
+    if args.number is not None:
+        expected = f"{args.number:04d}-"
+        if not args.slug.startswith(expected):
+            raise SystemExit(f"error: --number {args.number} requires --slug to start with {expected}")
+    if args.supplement_number is not None:
+        expected = f"s{args.supplement_number:02d}-"
+        if not args.slug.startswith(expected):
+            raise SystemExit(
+                f"error: --supplement-number {args.supplement_number} requires --slug to start with {expected}"
+            )
 
 
 def parse_tags(raw: str) -> list[str]:
@@ -73,6 +94,8 @@ def render_lesson(args: argparse.Namespace) -> str:
     title = args.title
     if args.number is not None:
         title = f"第{args.number:02d}课：{title}"
+    elif args.supplement_number is not None:
+        title = f"补充课{args.supplement_number:02d}：{title}"
     return (
         render_frontmatter(title, args.description, args.date, tags)
         + "\n"
@@ -101,6 +124,7 @@ def render_lesson(args: argparse.Namespace) -> str:
 def main() -> int:
     args = parse_args()
     validate_slug(args.slug)
+    validate_numbering(args)
 
     workspace = Path(args.workspace).resolve()
     output_dir = workspace / args.dir
