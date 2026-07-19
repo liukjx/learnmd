@@ -11,9 +11,12 @@ from pathlib import Path
 
 
 PRIVATE_NAMES = {
+    ".learnmd",
+    "KNOWLEDGE-COVERAGE.md",
     "MISSION.md",
     "NOTES.md",
     "RESOURCES.md",
+    "cleaned",
     "learning-records",
     "raw",
     "source",
@@ -132,6 +135,8 @@ def resolve_asset(root: Path, current: Path, target: str) -> bool:
 def check_private_leaks(root: Path, findings: list[Finding]) -> None:
     for path in all_files(root):
         rel = path.relative_to(root)
+        if rel.name.startswith("._"):
+            findings.append(Finding("error", rel, "AppleDouble metadata file is in public output"))
         if any(part in PRIVATE_NAMES for part in rel.parts):
             findings.append(Finding("error", rel, "private learning file or directory is in public output"))
 

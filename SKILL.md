@@ -1,6 +1,6 @@
 ---
 name: learnmd
-description: Create stateful Obsidian-friendly Markdown learning workspaces, especially full-coverage course notes from source materials. Use when the user wants multi-session learning notes, full course generation, complete course knowledge-point extraction, SRT/PDF/doc/slide-to-lesson conversion, source-to-note coverage audits, Obsidian study materials, or Quartz-ready course publishing. For source-derived courses, default to exhaustive knowledge-point coverage, not a course overview or learning-path summary.
+description: Create stateful Obsidian-friendly Markdown learning workspaces and minimal Quartz/blog-ready course notes, especially full-coverage course notes from source materials. Use when the user wants multi-session learning notes, full course generation, complete course knowledge-point extraction, SRT/PDF/doc/slide-to-lesson conversion, source-to-note coverage audits, Obsidian study materials, or Quartz/blog-ready course publishing. For source-derived courses, default to exhaustive knowledge-point coverage, not a course overview or learning-path summary.
 ---
 
 The user has asked you to teach them something. This is a stateful request — they intend to learn the topic over multiple sessions. All lessons are generated as **Obsidian-friendly Markdown** files.
@@ -20,7 +20,7 @@ python3 <skill-dir>/scripts/clean_srt.py path/to/subtitles.srt -o path/to/cleane
 The script removes sequence numbers, timestamp lines, and blank gaps, then joins subtitle text into lesson-ready plain text. It accepts stdin when no input file is provided, and it supports glob patterns and batch output:
 
 ```bash
-python3 <skill-dir>/scripts/clean_srt.py "*.srt" --output-dir cleaned/
+python3 <skill-dir>/scripts/clean_srt.py "*.srt" --output-dir .learnmd/cleaned/
 ```
 
 Example SRT input:
@@ -64,6 +64,29 @@ The state of each course is captured inside its course workspace in several file
 - `NOTES.md`: A scratchpad for you to jot down user preferences, or working notes.
 
 Private learning state and public course output are different things. Treat `MISSION.md`, `NOTES.md`, `RESOURCES.md`, and `./learning-records/` as private by default. Publish only lesson content, selected public references, course index/map pages, and assets that are intentionally safe for the reader.
+
+### Blog-Ready Minimal Mode
+
+When the user says the result will be published as a blog, Quartz site, or copied into `/Users/lishaojie/Documents/blogs/content`, default to a minimal public output surface:
+
+- Create public files only when they are useful to readers: `index.md`, `00-course-map.md`, `lessons/*.md`, `reference/*.md`, and referenced `assets/*`.
+- Keep mandatory audit files private and out of Quartz export. `KNOWLEDGE-COVERAGE.md` may remain in the course workspace root for checking, but it must not be copied manually into the blog content tree.
+- Do not create `MISSION.md`, `NOTES.md`, `RESOURCES.md`, `learning-records/`, or a CSS asset unless the user is using this as an ongoing personal learning workspace or the file is needed for the task.
+- Put generated intermediate source text under `.learnmd/cleaned/` instead of a public-looking `cleaned/` directory. Do not publish `.learnmd/`, `cleaned/`, raw transcripts, source PDFs, or AppleDouble `._*` files.
+- If the user wants a clean handoff after generation, run the workspace pruner in dry-run mode first, then apply only after reviewing the planned deletions:
+
+```bash
+python3 <skill-dir>/scripts/prune_course_workspace.py <course-workspace> --drop-cleaned
+python3 <skill-dir>/scripts/prune_course_workspace.py <course-workspace> --drop-cleaned --apply
+```
+
+For blog publishing, prefer the bundled Quartz exporter over manual copying. It copies only the public whitelist and avoids private state:
+
+```bash
+python3 <skill-dir>/scripts/export_to_quartz.py <course-workspace> \
+  --target /Users/lishaojie/Documents/blogs/content/courses/<course-slug> \
+  --apply
+```
 
 ## Philosophy
 
@@ -177,6 +200,26 @@ python3 <skill-dir>/scripts/check_knowledge_coverage.py <course-workspace>
 ```
 
 The goal is not to mechanically reproduce every sentence in the source. The goal is to account for every distinct concept, procedure, distinction, warning, example pattern, and practice skill so omissions are intentional and visible.
+
+### Coverage Audit Loop
+
+Use a closed extraction-to-audit loop for source-derived courses. Do not mark a course complete after drafting notes unless the ledger and the note text agree.
+
+1. Extract atomic `KP-*` rows before drafting final lessons. The row text should be specific enough that another reviewer can search for it in the final notes.
+2. Draft lessons and references from the ledger, not only from a high-level outline.
+3. After drafting, update `Covered In` with the actual lesson/reference paths that cover each point.
+4. Run the bundled checker in strict mode with its default note-text evidence scan:
+
+```bash
+python3 <skill-dir>/scripts/check_knowledge_coverage.py <course-workspace> --strict
+```
+
+5. For every missing or weak-evidence finding, inspect the source row and target note:
+   - If the point is relevant and teachable, add it to the most fitting lesson/reference and rerun the checker.
+   - If the point is off-mission, duplicate, logistics-only, unsafe/private, or not reusable teaching content, set `Status` to `omitted` and write the specific reason in `Notes`.
+   - If the source is ambiguous or too shallow to teach responsibly, set `Status` to `needs-review` and summarize the uncertainty in `Notes`.
+
+The checker uses deterministic local text evidence rather than a full embedding database, so it can produce false positives when the note paraphrases heavily. Treat a weak-evidence warning as a required human/LLM review item: either strengthen the note with explicit terminology, improve the `Knowledge Point` wording, or record why the row is intentionally omitted/needs-review. Do not silence warnings by pointing many rows at broad overview pages.
 
 For lecture-style courses, use this extraction granularity:
 

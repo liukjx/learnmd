@@ -12,6 +12,7 @@ from pathlib import Path
 
 
 PRIVATE_FILES = {
+    "KNOWLEDGE-COVERAGE.md",
     "MISSION.md",
     "NOTES.md",
     "RESOURCES.md",
@@ -22,8 +23,10 @@ PRIVATE_FILES = {
 }
 PRIVATE_DIRS = {
     ".git",
+    ".learnmd",
     ".obsidian",
     ".trash",
+    "cleaned",
     "learning-records",
     "raw",
     "source",
