@@ -31,6 +31,12 @@ def parse_args() -> argparse.Namespace:
         help="Output subdirectory under workspace. Defaults to lessons.",
     )
     parser.add_argument(
+        "--number",
+        type=int,
+        default=None,
+        help="Lesson number. When provided, auto-prepends '第NN课：' to the title.",
+    )
+    parser.add_argument(
         "--force",
         action="store_true",
         help="Overwrite an existing file.",
@@ -64,10 +70,13 @@ def render_frontmatter(title: str, description: str, lesson_date: str, tags: lis
 
 def render_lesson(args: argparse.Namespace) -> str:
     tags = parse_tags(args.tags)
+    title = args.title
+    if args.number is not None:
+        title = f"第{args.number:02d}课：{title}"
     return (
-        render_frontmatter(args.title, args.description, args.date, tags)
+        render_frontmatter(title, args.description, args.date, tags)
         + "\n"
-        + f"# {args.title}\n\n"
+        + f"# {title}\n\n"
         + "## Learning Objectives\n"
         + "- \n"
         + "- \n\n"

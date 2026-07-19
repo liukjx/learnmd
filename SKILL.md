@@ -242,8 +242,9 @@ Use the bundled lesson scaffold for new lesson files so Quartz frontmatter is co
 
 ```bash
 python3 <skill-dir>/scripts/scaffold_lesson.py <course-workspace> \
-  --title "第01课：NLP到底是什么？" \
+  --title "NLP到底是什么？" \
   --slug 0001-nlp-shi-shen-me \
+  --number 1 \
   --tags nlp,module-1 \
   --description "NLP的定义、起源、三个好学问标准"
 ```
@@ -289,7 +290,7 @@ The fixer is dry-run by default. Add `--apply` only after reviewing the planned 
 
 ## Lessons
 
-A lesson is the main thing you produce — the unit in which knowledge and skills reach the user. Each lesson is one self-contained Markdown file, saved to `./lessons/` and titled `0001-<dash-case-name>.md` where the number increments each time.
+A lesson is the main thing you produce — the unit in which knowledge and skills reach the user. Each lesson is one self-contained Markdown file, saved to `./lessons/` and titled `0001-<dash-case-name>.md` where the number increments each time. **The YAML `title` and page H1 must always start with `第XX课：`** (e.g. `第01课：NLP到底是什么？`). Use `--number` with `scaffold_lesson.py` to auto-generate this prefix rather than writing it manually.
 
 A lesson should be **beautiful** — clean structure, well-paced sections, and thoughtful use of diagrams, callouts, and formatting — since the user will return to these later to review in Obsidian.
 
